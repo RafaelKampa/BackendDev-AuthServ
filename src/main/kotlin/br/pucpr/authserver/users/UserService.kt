@@ -1,6 +1,7 @@
 package br.pucpr.authserver.users
 
 import br.pucpr.authserver.exception.BadRequestException
+import br.pucpr.authserver.exception.NotFoundException
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
@@ -23,6 +24,14 @@ class UserService(val repository: UserRepository) {
         repository.delete(user)
         log.info("User {} deleted", id)
         return true
+    }
+
+    fun update(id: Long, name: String): User? {
+        val user = repository.findByIdOrNull(id) ?:
+            throw NotFoundException(id)
+        if (user.name == name) return null
+        user.name = name
+        return repository.save(user)
     }
 
     companion object {

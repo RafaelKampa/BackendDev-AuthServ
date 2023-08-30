@@ -1,12 +1,14 @@
 package br.pucpr.authserver.users
 
 import br.pucpr.authserver.users.controller.requests.CreateUserRequest
+import br.pucpr.authserver.users.controller.requests.PatchUserRequest
 import br.pucpr.authserver.users.controller.responses.UserResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -23,15 +25,21 @@ class UserController(val service: UserService) {
             .status(HttpStatus.CREATED)
             .body(UserResponse(service.insert(user.toUser())))
 
-    @GetMapping
-    fun list(@RequestParam sortDir: String?): ResponseEntity<List<UserResponse>> {
-        val dir = sortDir?.uppercase() ?: "ASC"
-        val dirEnum = SortDir.values().find { it.name == dir }
-            ?: return ResponseEntity.badRequest().build()
+    @PatchMapping("/{id}")
+    fun update(
+        @PathVariable id: Long,
+        @RequestBody @Valid
+        request: PatchUserRequest
+    ) = service.update(id, request.name!!)
+        ?.let { ResponseEntity.ok(UserResponse(it)) }
+        ?: ResponseEntity.noContent().build()
 
-        val users = service.findAll(dirEnum).map { UserResponse(it) }
-        return ResponseEntity.ok(users)
-    }
+    @GetMapping
+    fun list(@RequestParam sortDir: String?) =
+        service.findAll(SortDir.findOrThrow(sortDir ?: "ASC"))
+            .map { UserResponse(it) }
+            .let { ResponseEntity.ok(it) }
+
 
     @GetMapping("/{id}")
     fun getById(@PathVariable id: Long) =

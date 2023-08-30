@@ -26,6 +26,9 @@ dependencies {
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("io.mockk:mockk:1.13.7")
+	testImplementation("io.kotest:kotest-runner-junit5-jvm:5.6.2")
+	runtimeOnly("io.kotest:kotest-assertions-core:5.6.2")
 }
 
 tasks.withType<KotlinCompile> {
