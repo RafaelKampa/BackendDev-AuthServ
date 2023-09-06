@@ -1,5 +1,7 @@
-package br.pucpr.authserver.users
+package br.pucpr.authserver.users.controller
 
+import br.pucpr.authserver.users.SortDir
+import br.pucpr.authserver.users.UserService
 import br.pucpr.authserver.users.controller.requests.CreateUserRequest
 import br.pucpr.authserver.users.controller.requests.PatchUserRequest
 import br.pucpr.authserver.users.controller.responses.UserResponse
@@ -28,11 +30,11 @@ class UserController(val service: UserService) {
     @PatchMapping("/{id}")
     fun update(
         @PathVariable id: Long,
-        @RequestBody @Valid
-        request: PatchUserRequest
+        @RequestBody @Valid request: PatchUserRequest
     ) = service.update(id, request.name!!)
         ?.let { ResponseEntity.ok(UserResponse(it)) }
         ?: ResponseEntity.noContent().build()
+
 
     @GetMapping
     fun list(@RequestParam sortDir: String?) =
@@ -51,4 +53,6 @@ class UserController(val service: UserService) {
     fun delete(@PathVariable id: Long): ResponseEntity<Void> =
         if (service.delete(id)) ResponseEntity.ok().build()
         else ResponseEntity.notFound().build()
+
+
 }

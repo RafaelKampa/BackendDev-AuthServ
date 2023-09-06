@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service
 class UserService(val repository: UserRepository) {
     fun insert(user: User): User {
         if (repository.findByEmailOrNull(user.email) != null) {
-            throw BadRequestException("User already exists!")
+            throw BadRequestException("User already exists")
         }
 
         val saved = repository.save(user)

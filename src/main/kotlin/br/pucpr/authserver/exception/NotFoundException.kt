@@ -9,5 +9,5 @@ class NotFoundException(
     cause: Throwable? = null
 ): IllegalArgumentException(message, cause) {
     constructor(id: Long, cause: Throwable? = null):
-            this("Not found. id= $id", cause)
+            this("Not found. id=$id", cause)
 }
