@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
+import org.springframework.http.ResponseEntity
 
 class UserControllerTest {
     private val userServiceMock = mockk<UserService>()
@@ -113,13 +114,25 @@ class UserControllerTest {
     }
 
 //    @Test
-//    fun `getById should throw OK code` () {
+//    fun `getById must return OK code if the id is located` () {
 //        val user = userStub()
-//        val request = PatchUserRequest(user.name)
-//        every { controller.getById(user.id!!) } returns user
+//        val response = ResponseEntity<UserResponse>(HttpStatus.OK)
+//        every { controller.getById(user.id!!) } returns response
 //
 //        with(controller.getById(user.id!!)) {
 //            statusCode shouldBe HttpStatus.OK
+//            body shouldBe user
+//        }
+//    }
+//
+//    @Test
+//    fun `getById must return NOT_FOUND code if the id isn't located` () {
+//        val user = userStub()
+//        val response = ResponseEntity<UserResponse>(HttpStatus.NOT_FOUND)
+//        every { controller.getById(2) } returns response
+//
+//        with(controller.getById(2)) {
+//            statusCode shouldBe HttpStatus.NOT_FOUND
 //            body shouldBe user
 //        }
 //    }

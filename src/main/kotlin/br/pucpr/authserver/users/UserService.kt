@@ -3,12 +3,15 @@ package br.pucpr.authserver.users
 import br.pucpr.authserver.exception.BadRequestException
 import br.pucpr.authserver.exception.NotFoundException
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.Sort
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 class UserService(val repository: UserRepository) {
     fun insert(user: User): User {
-        if (repository.findByEmailOrNull(user.email) != null) {
+        if (repository.findByEmail(user.email) != null) {
             throw BadRequestException("User already exists")
         }
 
@@ -17,8 +20,12 @@ class UserService(val repository: UserRepository) {
         return saved
     }
 
-    fun findAll(sortDir: SortDir) = repository.findAll(sortDir)
-    fun findByIdOrNull(id: Long) = repository.findByIdOrNull(id)
+    fun findAll(sortDir: SortDir):List<User> = when(sortDir) {
+        SortDir.ASC ->  repository.findAll(Sort.by("name").ascending())
+        SortDir.DESC ->  repository.findAll(Sort.by("name").descending())
+
+    }
+    fun findByIdOrNull(id: Long) = repository.findById(id).getOrNull()
     fun delete(id: Long): Boolean {
         val user = repository.findByIdOrNull(id) ?: return false
         repository.delete(user)

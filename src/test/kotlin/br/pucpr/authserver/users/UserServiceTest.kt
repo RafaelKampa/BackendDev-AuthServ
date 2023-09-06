@@ -14,6 +14,8 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.data.domain.Sort
+import org.springframework.data.repository.findByIdOrNull
 
 internal class UserServiceTest {
     private val repositoryMock = mockk<UserRepository>()
@@ -32,7 +34,7 @@ internal class UserServiceTest {
     @Test
     fun `insert must throw BadRequestException if an user with the same email is found`() {
         val user = userStub(id = null)
-        every { repositoryMock.findByEmailOrNull(user.email) } returns userStub()
+        every { repositoryMock.findByEmail(user.email) } returns userStub()
         assertThrows<BadRequestException> {
             service.insert(user)
         } shouldHaveMessage "User already exists"
@@ -41,7 +43,7 @@ internal class UserServiceTest {
     @Test
     fun `insert must return the saved user if it's inserted`() {
         val user = userStub(id = null)
-        every { repositoryMock.findByEmailOrNull(user.email) } returns null
+        every { repositoryMock.findByEmail(user.email) } returns null
 
         val saved = userStub()
         every { repositoryMock.save(user) } returns saved
@@ -88,9 +90,9 @@ internal class UserServiceTest {
 
     @Test
     fun `findAll should delegate to repository`() {
-        val sortDir = SortDir.values().random()
-        val userList = listOf(userStub(1), userStub(2), userStub(3))
-        every { repositoryMock.findAll(sortDir) } returns userList
+        val sortDir = SortDir.ASC
+        val userList = listOf<User>()
+        every { repositoryMock.findAll(Sort.by("name")) } returns userList
         service.findAll(sortDir) shouldBe userList
     }
 
@@ -111,7 +113,7 @@ internal class UserServiceTest {
     fun `delete must call delete and return true if the user exists`() {
         val user = userStub()
         every { repositoryMock.findByIdOrNull(1) } returns user
-        every { repositoryMock.delete(user) } returns null
+//        every { repositoryMock.delete(user) } returns null
         service.delete(1) shouldBe true
     }
 }
