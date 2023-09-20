@@ -5,9 +5,8 @@ import org.springframework.web.bind.annotation.ResponseStatus
 
 @ResponseStatus(NOT_FOUND)
 class NotFoundException(
-    message: String = "Not found",
+    message: String = "Bad request",
     cause: Throwable? = null
-): IllegalArgumentException(message, cause) {
-    constructor(id: Long, cause: Throwable? = null):
-            this("Not found. id=$id", cause)
+) : IllegalArgumentException(message, cause) {
+    constructor(id: Long) : this("Not found. id=$id")
 }

@@ -9,7 +9,5 @@ enum class SortDir {
         fun findOrThrow(sortDir: String) =
             values().find { it.name == sortDir.uppercase() }
                 ?: throw BadRequestException("Invalid sort dir!")
-
     }
-
 }

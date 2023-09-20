@@ -3,27 +3,25 @@ package br.pucpr.authserver.users.controller
 import br.pucpr.authserver.exception.BadRequestException
 import br.pucpr.authserver.exception.NotFoundException
 import br.pucpr.authserver.users.SortDir
-import br.pucpr.authserver.users.Stubs
 import br.pucpr.authserver.users.Stubs.userStub
-import br.pucpr.authserver.users.User
 import br.pucpr.authserver.users.UserService
 import br.pucpr.authserver.users.controller.requests.CreateUserRequest
 import br.pucpr.authserver.users.controller.requests.PatchUserRequest
 import br.pucpr.authserver.users.controller.responses.UserResponse
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.throwable.shouldHaveMessage
-import io.mockk.*
+import io.mockk.checkUnnecessaryStub
+import io.mockk.clearAllMocks
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.http.HttpStatus
-import org.springframework.http.HttpStatusCode
-import org.springframework.http.ResponseEntity
 
 class UserControllerTest {
-    private val userServiceMock = mockk<UserService>()
-    private val controller = UserController(userServiceMock)
+    private val serviceMock = mockk<UserService>()
+    private val controller = UserController(serviceMock)
 
     @BeforeEach
     fun setup() {
@@ -32,15 +30,15 @@ class UserControllerTest {
 
     @AfterEach
     fun cleanUp() {
-        checkUnnecessaryStub(userServiceMock)
+        checkUnnecessaryStub(serviceMock)
     }
 
     @Test
     fun `insert must return the new user with CREATED code`() {
-        val user = userStub()
-        val request = CreateUserRequest(user.email, user.password, user.name)
-        every { userServiceMock.insert(any()) } returns user
+        val user = userStub(id = 1)
 
+        val request = CreateUserRequest(user.email, user.name, user.password)
+        every { serviceMock.insert(any()) } returns user
         with(controller.insert(request)) {
             statusCode shouldBe HttpStatus.CREATED
             body shouldBe UserResponse(user)
@@ -48,11 +46,21 @@ class UserControllerTest {
     }
 
     @Test
-    fun `update must return OK if the user was updated`() {
-        val user = userStub()
-        val request = PatchUserRequest(user.name)
-        every { userServiceMock.update(user.id!!, user.name) } returns user
+    fun `update should return NO_CONTENT if the service returns null`() {
+        val user = userStub(id = 1)
+        every { serviceMock.update(user.id!!, user.name) } returns null
+        with(controller.update(user.id!!, PatchUserRequest(user.name))) {
+            statusCode shouldBe HttpStatus.NO_CONTENT
+            body shouldBe null
+        }
+    }
 
+    @Test
+    fun `update should return OK with the updated user if the service updates it`() {
+        val user = userStub(id = 1)
+        val request = PatchUserRequest(user.name)
+
+        every { serviceMock.update(user.id!!, user.name) } returns user
         with(controller.update(user.id!!, request)) {
             statusCode shouldBe HttpStatus.OK
             body shouldBe UserResponse(user)
@@ -60,46 +68,21 @@ class UserControllerTest {
     }
 
     @Test
-    fun `update must return NO_CONTENT if the controller returns null`() {
-        val user = userStub()
-        val request = PatchUserRequest(user.name)
-        every { userServiceMock.update(user.id!!, user.name) } returns null
-
-        with(controller.update(user.id!!, request)) {
-            statusCode shouldBe HttpStatus.NO_CONTENT
-            body shouldBe null
-        }
-    }
-
-    @Test
-    fun `update must forward NotFoundException if the service throws it`() {
-        val user = userStub()
-        val request = PatchUserRequest(user.name)
-        every { userServiceMock.update(user.id!!, user.name) } throws NotFoundException()
-
+    fun `update should forward NotFoundException if the user is not found`() {
+        val user = userStub(id = 1)
+        every { serviceMock.update(user.id!!, user.name) } throws NotFoundException()
         assertThrows<NotFoundException> {
-            controller.update(user.id!!, request)
+            controller.update(user.id!!, PatchUserRequest(user.name))
         }
     }
 
     @Test
-    fun `list should use ASC as the default parameter` () {
+    fun `list should return all found users with the given parameter`() {
         val users = listOf(
-            userStub(1, "Ana"), userStub(2, "Bianca")
+            userStub(1, "Ana"), userStub(2, "Bruno")
         )
-        every { userServiceMock.findAll(SortDir.ASC) } returns users
-        with(controller.list(null)) {
-            statusCode shouldBe HttpStatus.OK
-            body shouldBe users.map { UserResponse(it) }
-        }
-    }
 
-    @Test
-    fun `list should return all found users with the fiven sort parameter` () {
-        val users = listOf(
-            userStub(1, "Ana"), userStub(2, "Bianca")
-        )
-        every { userServiceMock.findAll(SortDir.DESC) } returns users
+        every { serviceMock.findAll(SortDir.DESC) } returns users
         with(controller.list("DESC")) {
             statusCode shouldBe HttpStatus.OK
             body shouldBe users.map { UserResponse(it) }
@@ -107,34 +90,53 @@ class UserControllerTest {
     }
 
     @Test
-    fun `list should throw BadRequestException for an invalid sort parameter` () {
+    fun `list should use ASC as default parameter`() {
+        val users = listOf(
+            userStub(1, "Ana"), userStub(2, "Bruno")
+        )
+
+        every { serviceMock.findAll(SortDir.ASC) } returns users
+        with(controller.list(null)) {
+            statusCode shouldBe HttpStatus.OK
+            body shouldBe users.map { UserResponse(it) }
+        }
+    }
+
+    @Test
+    fun `list should throw BadRequestException with a invalid sort parameter`() {
         assertThrows<BadRequestException> {
             controller.list("INVALID")
         }
     }
 
-//    @Test
-//    fun `getById must return OK code if the id is located` () {
-//        val user = userStub()
-//        val response = ResponseEntity<UserResponse>(HttpStatus.OK)
-//        every { controller.getById(user.id!!) } returns response
-//
-//        with(controller.getById(user.id!!)) {
-//            statusCode shouldBe HttpStatus.OK
-//            body shouldBe user
-//        }
-//    }
-//
-//    @Test
-//    fun `getById must return NOT_FOUND code if the id isn't located` () {
-//        val user = userStub()
-//        val response = ResponseEntity<UserResponse>(HttpStatus.NOT_FOUND)
-//        every { controller.getById(2) } returns response
-//
-//        with(controller.getById(2)) {
-//            statusCode shouldBe HttpStatus.NOT_FOUND
-//            body shouldBe user
-//        }
-//    }
+    @Test
+    fun `getById must returns the user`() {
+        val user = userStub(id = 1)
+        every { serviceMock.findByIdOrNull(user.id!!) } returns user
+        with(controller.getById(user.id!!)) {
+            statusCode shouldBe HttpStatus.OK
+            body shouldBe UserResponse(user)
+        }
+    }
 
+    @Test
+    fun `getById must return NOT FOUND if the user is not found`() {
+        every { serviceMock.findByIdOrNull(1) } returns null
+        controller.getById(1).statusCode shouldBe HttpStatus.NOT_FOUND
+    }
+
+    @Test
+    fun `delete should return OK if the user gets deleted`() {
+        every { serviceMock.delete(1) } returns true
+        with(controller.delete(1)) {
+            statusCode shouldBe HttpStatus.OK
+            body shouldBe null
+        }
+    }
+
+    @Test
+    fun `delete should return NOT_FOUND if the user does not exists`() {
+        every { serviceMock.delete(1) } returns false
+        controller.delete(1).statusCode shouldBe HttpStatus.NOT_FOUND
+    }
 }

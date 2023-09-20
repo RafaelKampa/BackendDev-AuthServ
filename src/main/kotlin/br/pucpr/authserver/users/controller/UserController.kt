@@ -22,26 +22,23 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/users")
 class UserController(val service: UserService) {
     @PostMapping
-    fun insert(@RequestBody @Valid user: CreateUserRequest) =
-        ResponseEntity
-            .status(HttpStatus.CREATED)
-            .body(UserResponse(service.insert(user.toUser())))
+    fun insert(@Valid @RequestBody user: CreateUserRequest) =
+        UserResponse(service.insert(user.toUser()))
+            .let { ResponseEntity.status(HttpStatus.CREATED).body(it) }
 
     @PatchMapping("/{id}")
     fun update(
         @PathVariable id: Long,
-        @RequestBody @Valid request: PatchUserRequest
+        @Valid @RequestBody request: PatchUserRequest
     ) = service.update(id, request.name!!)
         ?.let { ResponseEntity.ok(UserResponse(it)) }
         ?: ResponseEntity.noContent().build()
-
 
     @GetMapping
     fun list(@RequestParam sortDir: String?) =
         service.findAll(SortDir.findOrThrow(sortDir ?: "ASC"))
             .map { UserResponse(it) }
             .let { ResponseEntity.ok(it) }
-
 
     @GetMapping("/{id}")
     fun getById(@PathVariable id: Long) =
@@ -53,6 +50,4 @@ class UserController(val service: UserService) {
     fun delete(@PathVariable id: Long): ResponseEntity<Void> =
         if (service.delete(id)) ResponseEntity.ok().build()
         else ResponseEntity.notFound().build()
-
-
 }
