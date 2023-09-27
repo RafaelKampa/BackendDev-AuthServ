@@ -2,7 +2,14 @@ package br.pucpr.authserver.users
 
 import br.pucpr.authserver.exception.BadRequestException
 import br.pucpr.authserver.exception.NotFoundException
+import br.pucpr.authserver.roles.RoleRepository
+import br.pucpr.authserver.security.Jwt
+import br.pucpr.authserver.users.Stubs.roleStub
 import br.pucpr.authserver.users.Stubs.userStub
+import br.pucpr.authserver.users.controller.responses.LoginResponse
+import br.pucpr.authserver.users.controller.responses.UserResponse
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.throwable.shouldHaveMessage
 import io.mockk.checkUnnecessaryStub
@@ -16,11 +23,15 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.data.domain.Sort
+import org.springframework.data.repository.findByIdOrNull
 import java.util.Optional
 
 internal class UserServiceTest {
     private val repositoryMock = mockk<UserRepository>()
-    private val service = UserService(repositoryMock)
+    private val roleRepositoryMock = mockk<RoleRepository>()
+    private val jwt = mockk<Jwt>()
+
+    private val service = UserService(repositoryMock, roleRepositoryMock, jwt)
 
     @BeforeEach
     fun setup() {
@@ -29,7 +40,7 @@ internal class UserServiceTest {
 
     @AfterEach
     fun cleanUp() {
-        checkUnnecessaryStub(repositoryMock)
+        checkUnnecessaryStub(repositoryMock, roleRepositoryMock, jwt)
     }
 
     @Test
@@ -124,5 +135,86 @@ internal class UserServiceTest {
         every { repositoryMock.findById(1) } returns Optional.of(user)
         justRun { repositoryMock.delete(user) }
         service.delete(1) shouldBe true
+    }
+
+    @Test
+    fun `delete should throw a BadRequestException if the user is the last admin`() {
+        every { repositoryMock.findByIdOrNull(1) } returns userStub(roles = listOf("ADMIN"))
+        every {
+            repositoryMock.findByRole("ADMIN")
+        } returns listOf(userStub(roles = listOf("ADMIN")))
+
+        shouldThrow<BadRequestException> {
+            service.delete(1)
+        } shouldHaveMessage "Cannot delete the last system admin!"
+    }
+
+    @Test
+    fun `findByRole must delegate to the repository`() {
+        val users = listOf(userStub())
+        every { repositoryMock.findByRole("role") } returns users
+        service.findByRole("role") shouldBe users
+    }
+
+    @Test
+    fun `addRole should throw NotFoundException if the user does not exists`() {
+        every { repositoryMock.findById(1) } returns Optional.empty()
+        assertThrows<NotFoundException> {
+            service.addRole(1, "admin")
+        }
+    }
+
+    @Test
+    fun `addRole should throw BadRequestException if the role does not exist`() {
+        every { repositoryMock.findById(1) } returns Optional.of(userStub())
+        every { roleRepositoryMock.findByName("ADMIN") } returns null
+
+        assertThrows<BadRequestException> {
+            service.addRole(1, "ADMIN")
+        } shouldHaveMessage "Invalid role: ADMIN"
+    }
+
+    @Test
+    fun `addRole should return FALSE if the user already have the role`() {
+        every { repositoryMock.findById(1) } returns Optional.of(userStub(roles = listOf("ADMIN")))
+        service.addRole(1, "ADMIN") shouldBe false
+    }
+
+    @Test
+    fun `addRole should return TRUE and save the user`() {
+        val user = userStub()
+        val role = roleStub(name = "ADMIN")
+
+        every { repositoryMock.findById(1) } returns Optional.of(user)
+        every { roleRepositoryMock.findByName("ADMIN") } returns role
+        every { repositoryMock.save(user) } returns user
+
+        service.addRole(1, "ADMIN") shouldBe true
+        user.roles shouldContain role
+    }
+
+    @Test
+    fun `login should return null if the user is not found`() {
+        every { repositoryMock.findByEmail("email") } returns null
+        service.login("email", "password") shouldBe null
+    }
+
+    @Test
+    fun `login should return null if the password is wrong`() {
+        val user = userStub()
+        every { repositoryMock.findByEmail(user.email) } returns user
+        service.login(user.email, "wrong") shouldBe null
+    }
+
+    @Test
+    fun `login should return the login response if credentials are correct`() {
+        val user = userStub()
+        every { repositoryMock.findByEmail(user.email) } returns user
+        every { jwt.createToken(user) } returns "token"
+
+        service.login(user.email, user.password) shouldBe LoginResponse(
+            token = "token",
+            UserResponse(user)
+        )
     }
 }
