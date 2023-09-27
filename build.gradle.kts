@@ -15,11 +15,18 @@ java {
 	sourceCompatibility = JavaVersion.VERSION_17
 }
 
+configurations {
+	compileOnly {
+		extendsFrom(configurations.annotationProcessor.get())
+	}
+}
+
 repositories {
 	mavenCentral()
 }
 
 dependencies {
+	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")

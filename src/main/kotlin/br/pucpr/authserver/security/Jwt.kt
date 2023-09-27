@@ -17,15 +17,17 @@ import java.time.ZonedDateTime
 import java.util.Date
 
 @Component
-class Jwt {
+class Jwt (
+    val properties: TokenProperties
+        ){
     fun createToken(user: User): String =
         UserToken(user).let {
             Jwts.builder()
-                .signWith(Keys.hmacShaKeyFor(SECRET.toByteArray()))
+                .signWith(Keys.hmacShaKeyFor(properties.secret.toByteArray()))
                 .serializeToJsonWith(JacksonSerializer())
                 .setIssuedAt(utcNow().toDate())
-                .setExpiration(utcNow().plusHours(EXPIRE_HOURS).toDate())
-                .setIssuer(ISSUER)
+                .setExpiration(utcNow().plusHours(properties.expireHours).toDate())
+                .setIssuer(properties.issuer)
                 .setSubject(it.id.toString())
                 .addClaims(mapOf(USER_FIELD to it))
                 .compact()
@@ -54,13 +56,14 @@ class Jwt {
         }
     }
 
+    private val SECRET = properties.secret
+    private val EXPIRE_HOURS = properties.expireHours
+    private val ISSUER = properties.issuer
+
     companion object {
         private const val PREFIX = "Bearer"
         private const val USER_FIELD = "user"
 
-        private const val SECRET = "C0nm,7E=6Qv5oLSy{2.2^<&@AKk}FA-{"
-        private const val EXPIRE_HOURS = 24L
-        private const val ISSUER = "AuthServer"
         private val log = LoggerFactory.getLogger(Jwt::class.java)
 
         private fun ZonedDateTime.toDate(): Date = Date.from(this.toInstant())

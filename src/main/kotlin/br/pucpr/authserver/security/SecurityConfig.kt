@@ -1,12 +1,15 @@
 package br.pucpr.authserver.security
 
+import br.pucpr.authserver.users.User
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType
 import io.swagger.v3.oas.annotations.security.SecurityScheme
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
+import org.springframework.boot.context.properties.ConfigurationProperties
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.PropertySource
 import org.springframework.http.HttpMethod
 import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
@@ -28,6 +31,7 @@ import org.springframework.web.servlet.handler.HandlerMappingIntrospector
     scheme = "bearer",
     bearerFormat = "JWT"
 )
+@PropertySource("classpath:/security.properties")
 class SecurityConfig(
     val jwtTokenFilter: JwtTokenFilter
 ) {
@@ -68,6 +72,10 @@ class SecurityConfig(
                 registerCorsConfiguration("/**", it)
             }
         }.let { CorsFilter(it) }
+
+    @ConfigurationProperties("security.admin")
+    @Bean("defaultAdmin")
+    fun adminUser() = User()
 
     companion object {
         private val log = LoggerFactory.getLogger(SecurityConfig::class.java)

@@ -5,14 +5,19 @@ import br.pucpr.authserver.roles.RoleRepository
 import br.pucpr.authserver.users.User
 import br.pucpr.authserver.users.UserRepository
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.ApplicationListener
+import org.springframework.context.annotation.Bean
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.stereotype.Component
 
 @Component
 class Bootstrapper(
     val userRepository: UserRepository,
-    val roleRepository: RoleRepository
+    val roleRepository: RoleRepository,
+    @Qualifier("defaultAdmin") val adminUser: User
 ): ApplicationListener<ContextRefreshedEvent> {
     override fun onApplicationEvent(event: ContextRefreshedEvent) {
         val adminRole =
@@ -24,13 +29,8 @@ class Bootstrapper(
                     }
 
         if (userRepository.findByRole("ADMIN").isEmpty()) {
-            val admin = User(
-                email="admin@authserver.com",
-                password="admin",
-                name="Auth Server Administrator"
-            )
-            admin.roles.add(adminRole)
-            userRepository.save(admin)
+            adminUser.roles.add(adminRole)
+            userRepository.save(adminUser)
             log.info("Administrator created")
         }
     }

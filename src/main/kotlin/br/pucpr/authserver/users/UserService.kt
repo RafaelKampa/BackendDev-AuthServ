@@ -7,6 +7,8 @@ import br.pucpr.authserver.security.Jwt
 import br.pucpr.authserver.users.controller.responses.LoginResponse
 import br.pucpr.authserver.users.controller.responses.UserResponse
 import org.slf4j.LoggerFactory
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.context.annotation.Bean
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import kotlin.jvm.optionals.getOrNull

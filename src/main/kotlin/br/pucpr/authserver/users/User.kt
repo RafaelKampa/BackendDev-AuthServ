@@ -20,11 +20,11 @@ class User(
     var id: Long? = null,
 
     @Column(unique = true)
-    var email: String,
+    var email: String = "",
 
-    var password: String,
+    var password: String = "",
 
-    var name: String,
+    var name: String = "",
 
     @ManyToMany
     @JoinTable(
