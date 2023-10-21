@@ -1,6 +1,6 @@
 package br.pucpr.authserver.users
 
-import br.pucpr.authserver.Bootstrapper
+
 import br.pucpr.authserver.roles.Role
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.Column

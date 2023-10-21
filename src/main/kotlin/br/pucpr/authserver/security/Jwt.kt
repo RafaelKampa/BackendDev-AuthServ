@@ -17,9 +17,9 @@ import java.time.ZonedDateTime
 import java.util.Date
 
 @Component
-class Jwt (
+class Jwt(
     val properties: TokenProperties
-        ){
+) {
     fun createToken(user: User): String =
         UserToken(user).let {
             Jwts.builder()
@@ -40,14 +40,14 @@ class Jwt (
             val token = header.replace(PREFIX, "").trim()
 
             val claims = Jwts.parserBuilder()
-                .setSigningKey(SECRET.toByteArray())
+                .setSigningKey(properties.secret.toByteArray())
                 .deserializeJsonWith(JacksonDeserializer(
                     mapOf(USER_FIELD to UserToken::class.java)
                 )).build()
                 .parseClaimsJws(token)
                 .body
 
-            if (claims.issuer != ISSUER) return null
+            if (claims.issuer != properties.issuer) return null
             val user = claims.get(USER_FIELD, UserToken::class.java)
             return createAuthentication(user)
         } catch (e: Throwable) {
@@ -56,9 +56,6 @@ class Jwt (
         }
     }
 
-    private val SECRET = properties.secret
-    private val EXPIRE_HOURS = properties.expireHours
-    private val ISSUER = properties.issuer
 
     companion object {
         private const val PREFIX = "Bearer"
