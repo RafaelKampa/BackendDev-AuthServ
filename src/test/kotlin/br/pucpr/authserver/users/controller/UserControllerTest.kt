@@ -3,7 +3,7 @@ package br.pucpr.authserver.users.controller
 import br.pucpr.authserver.exception.BadRequestException
 import br.pucpr.authserver.exception.ForbiddenException
 import br.pucpr.authserver.exception.NotFoundException
-import br.pucpr.authserver.users.SortDir
+import br.pucpr.authserver.SortDir
 import br.pucpr.authserver.users.Stubs.adminStub
 import br.pucpr.authserver.users.Stubs.authStub
 import br.pucpr.authserver.users.Stubs.userStub

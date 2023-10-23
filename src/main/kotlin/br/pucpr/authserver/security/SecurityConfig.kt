@@ -49,12 +49,15 @@ class SecurityConfig(
                         .also { log.warn("Authorization failed", ex)  }
                 }
             }
+            //TODO: Adicionar as rotas da classe Task
             .headers { header -> header.frameOptions { it.disable() }}
             .authorizeHttpRequests { requests ->
                 requests
                     .requestMatchers(antMatcher(HttpMethod.GET)).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.POST, "/users")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.POST, "/users/login")).permitAll()
+                    //TODO: Verificar o .hasRole Abaixo
+                    .requestMatchers(mvc.pattern(HttpMethod.POST, "/tasks")).hasRole("ADMIN")
                     .requestMatchers(antMatcher("/h2-console/**")).permitAll()
                     .anyRequest().authenticated()
             }

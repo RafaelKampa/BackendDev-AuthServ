@@ -2,7 +2,7 @@ package br.pucpr.authserver.users.controller
 
 import br.pucpr.authserver.exception.ForbiddenException
 import br.pucpr.authserver.security.UserToken
-import br.pucpr.authserver.users.SortDir
+import br.pucpr.authserver.SortDir
 import br.pucpr.authserver.users.UserService
 import br.pucpr.authserver.users.controller.requests.CreateUserRequest
 import br.pucpr.authserver.users.controller.requests.LoginRequest
