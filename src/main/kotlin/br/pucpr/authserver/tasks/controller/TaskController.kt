@@ -6,6 +6,8 @@ import br.pucpr.authserver.security.UserToken
 import br.pucpr.authserver.tasks.TaskService
 import br.pucpr.authserver.tasks.controller.requests.CreateOrUpdateTaskRequest
 import br.pucpr.authserver.tasks.controller.responses.TaskResponse
+import br.pucpr.authserver.users.UserService
+import br.pucpr.authserver.users.controller.UserController
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -16,15 +18,23 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/tasks")
-class TaskController(val service: TaskService) {
+class TaskController(val service: TaskService, val userService: UserService) {
 
     @SecurityRequirement(name="AuthServer")
     @PreAuthorize("hasRole('ADMIN')")
-    //TODO: Verificar com o professor o porque o post de insert user não precisa de um caminho no @PostMapping
     @PostMapping("/insertTask")
-    fun insert(@Valid @RequestBody task: CreateOrUpdateTaskRequest) =
-        TaskResponse(service.insert(task.toTask()))
+    fun insert(
+        @Valid
+        @RequestBody task: CreateOrUpdateTaskRequest): ResponseEntity<TaskResponse> {//TODO: Criar um BadRequest
+        val conferentes =  task.conferente.mapNotNull { userService.findByIdOrNull(it) }
+        val executor =  task.executor.mapNotNull { userService.findByIdOrNull(it) }
+        val taskEntity = task.toTask()
+        taskEntity.conferente.addAll(conferentes)
+        taskEntity.executor.addAll(executor)
+        return TaskResponse(service.insert(taskEntity))
             .let { ResponseEntity.status(HttpStatus.CREATED).body(it) }
+    }
+
 
     @SecurityRequirement(name="AuthServer")
     @PreAuthorize("hasRole('ADMIN')")
@@ -45,7 +55,6 @@ class TaskController(val service: TaskService) {
 
     @SecurityRequirement(name="AuthServer")
     @PreAuthorize("permitAll()")
-    //TODO: Ver com o professor sobre o caminho do Get para futura utilização no front
     @GetMapping
     fun list(@RequestParam sortDir: String? = null) =
         service.findAll(SortDir.findOrThrow(sortDir ?: "ASC"))

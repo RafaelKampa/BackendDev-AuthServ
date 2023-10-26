@@ -2,6 +2,7 @@ package br.pucpr.authserver.tasks.controller.responses
 
 import br.pucpr.authserver.tasks.Task
 import br.pucpr.authserver.users.User
+import br.pucpr.authserver.users.controller.responses.UserResponse
 import java.util.*
 
 data class TaskResponse(
@@ -17,8 +18,8 @@ data class TaskResponse(
     val dataFinal: Date?,
     val valorTotal: Double,
     val obs: String?,
-    val executor: Set<Long>,
-    val conferente: Set<Long>
+    val executor: Set<UserResponse>,
+    val conferente: Set<UserResponse>
 ) {
     constructor(task: Task) : this(
         task.id!!,
@@ -33,7 +34,7 @@ data class TaskResponse(
         task.dataFinal,
         task.valorTotal!!,
         task.obs,
-        task.executor!!,
-        task.conferente!!
+        task.executor.map { UserResponse(it) }.toSet(),
+        task.conferente.map { UserResponse(it) }.toSet()
     )
 }

@@ -1,6 +1,7 @@
 package br.pucpr.authserver.tasks
 
 import br.pucpr.authserver.users.User
+import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 import java.util.*
 
@@ -43,19 +44,21 @@ class Task(
     @Column(name = "OBS")
     var obs: String?,
 
-    @ElementCollection
-    @CollectionTable(
+    @ManyToMany
+    @JoinTable(
         name = "TaskExecutor",
-        joinColumns = [JoinColumn(name = "idTask")])
-    @Column(name = "idUser")
-    val executor: Set<Long> = mutableSetOf(),
+        joinColumns = [JoinColumn(name = "idTask")],
+        inverseJoinColumns = [JoinColumn(name = "idUser")]
+    )
+    val executor: MutableSet<User> = mutableSetOf(),
 
-    @ElementCollection
-    @CollectionTable(
+    @ManyToMany
+    @JoinTable(
         name = "TaskConferente",
-        joinColumns = [JoinColumn(name = "idTask")])
-    @Column(name = "idUser")
-    val conferente: Set<Long> = mutableSetOf()
+        joinColumns = [JoinColumn(name = "idTask")],
+        inverseJoinColumns = [JoinColumn(name = "idUser")]
+    )
+    val conferente: MutableSet<User> = mutableSetOf()
 
 
 ) {}

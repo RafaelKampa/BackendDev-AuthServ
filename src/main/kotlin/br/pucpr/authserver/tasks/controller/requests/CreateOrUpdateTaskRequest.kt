@@ -56,8 +56,6 @@ data class CreateOrUpdateTaskRequest(
         previsaoTermino = previsaoTermino!!,
         dataFinal = dataFinal,
         valorTotal = valorTotal!!,
-        obs = obs,
-        executor = executor!!,
-        conferente = conferente!!
+        obs = obs
     )
 }

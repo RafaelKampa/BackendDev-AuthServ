@@ -56,7 +56,6 @@ class SecurityConfig(
                     .requestMatchers(antMatcher(HttpMethod.GET)).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.POST, "/users")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.POST, "/users/login")).permitAll()
-                    //TODO: Verificar o .hasRole Abaixo
                     .requestMatchers(mvc.pattern(HttpMethod.POST, "/tasks")).hasRole("ADMIN")
                     .requestMatchers(antMatcher("/h2-console/**")).permitAll()
                     .anyRequest().authenticated()
