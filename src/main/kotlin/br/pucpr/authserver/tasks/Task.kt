@@ -50,7 +50,7 @@ class Task(
         joinColumns = [JoinColumn(name = "idTask")],
         inverseJoinColumns = [JoinColumn(name = "idUser")]
     )
-    val executor: MutableSet<User> = mutableSetOf(),
+    var executor: MutableSet<User> = mutableSetOf(),
 
     @ManyToMany
     @JoinTable(
@@ -58,7 +58,7 @@ class Task(
         joinColumns = [JoinColumn(name = "idTask")],
         inverseJoinColumns = [JoinColumn(name = "idUser")]
     )
-    val conferente: MutableSet<User> = mutableSetOf()
+    var conferente: MutableSet<User> = mutableSetOf()
 
 
 ) {}

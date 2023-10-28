@@ -3,18 +3,18 @@ package br.pucpr.authserver.tasks
 import br.pucpr.authserver.SortDir
 import br.pucpr.authserver.exception.BadRequestException
 import br.pucpr.authserver.exception.NotFoundException
-import br.pucpr.authserver.security.Jwt
 import br.pucpr.authserver.users.User
 import br.pucpr.authserver.users.UserRepository
 import br.pucpr.authserver.users.UserService
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Sort
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import kotlin.jvm.optionals.getOrNull
 
 @Service
 class TaskService (
     val repository: TaskRepository,
+    val userService: UserService,
     val userRepository: UserRepository,
 ) {
 
@@ -23,6 +23,23 @@ class TaskService (
     }
 
     fun insert(task: Task): Task {
+        val executor =  task.executor.mapNotNull { it.id?.let { it1 -> userService.findByIdOrNull(it1) } }
+        val conferente =  task.conferente.mapNotNull { it.id?.let { it1 -> userService.findByIdOrNull(it1) } }
+        var conferenteIsAdm: User = conferente.first()
+
+        if (executor.isEmpty()) {
+            throw BadRequestException("ID Executor not found!")
+        }
+        if (conferente.isEmpty()) {
+            throw BadRequestException("ID Conferente not found!")
+        }
+        if(!conferenteIsAdm.isAdmin) {
+            throw BadRequestException("The 'Conferente' does not have Administrator permission!")
+        }
+
+        task.executor = executor.toMutableSet()
+        task.conferente = conferente.toMutableSet()
+
         return repository.save(task)
             .also{ log.info("Task inserted: {}", it.id) }
     }

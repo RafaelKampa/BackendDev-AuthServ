@@ -25,12 +25,14 @@ class TaskController(val service: TaskService, val userService: UserService) {
     @PostMapping("/insertTask")
     fun insert(
         @Valid
-        @RequestBody task: CreateOrUpdateTaskRequest): ResponseEntity<TaskResponse> {//TODO: Criar um BadRequest
-        val conferentes =  task.conferente.mapNotNull { userService.findByIdOrNull(it) }
+        @RequestBody task: CreateOrUpdateTaskRequest): ResponseEntity<TaskResponse> {
         val executor =  task.executor.mapNotNull { userService.findByIdOrNull(it) }
+        val conferente =  task.conferente.mapNotNull { userService.findByIdOrNull(it) }
         val taskEntity = task.toTask()
-        taskEntity.conferente.addAll(conferentes)
+
         taskEntity.executor.addAll(executor)
+        taskEntity.conferente.addAll(conferente)
+
         return TaskResponse(service.insert(taskEntity))
             .let { ResponseEntity.status(HttpStatus.CREATED).body(it) }
     }
