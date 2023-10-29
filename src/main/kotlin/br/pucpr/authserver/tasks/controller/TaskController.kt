@@ -40,19 +40,21 @@ class TaskController(val service: TaskService, val userService: UserService) {
 
     @SecurityRequirement(name="AuthServer")
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/updateTask/{id}")
+    @PatchMapping("/{id}")
     fun update(
         @Valid
         @RequestBody request: CreateOrUpdateTaskRequest,
         @PathVariable id: Long,
-        auth: Authentication
     ): ResponseEntity <TaskResponse> {
-        val token = auth.principal as? UserToken ?: throw ForbiddenException()
-        if (token.id != id && !token.isAdmin) throw ForbiddenException()
+        val executor =  request.executor.mapNotNull { userService.findByIdOrNull(it) }
+        val conferente =  request.conferente.mapNotNull { userService.findByIdOrNull(it) }
+        val taskEntity = request.toTask()
 
-        return service.update(id)
-            ?.let{ ResponseEntity.ok(TaskResponse(it)) }
-            ?: ResponseEntity.noContent().build()
+        taskEntity.executor.addAll(executor)
+        taskEntity.conferente.addAll(conferente)
+
+        return service.update(id, taskEntity)
+            .let{ ResponseEntity.ok(TaskResponse(it)) }
     }
 
     @SecurityRequirement(name="AuthServer")
