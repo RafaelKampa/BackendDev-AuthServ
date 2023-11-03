@@ -5,8 +5,8 @@ import br.pucpr.authserver.exception.BadRequestException
 import br.pucpr.authserver.exception.NotFoundException
 import br.pucpr.authserver.roles.RoleRepository
 import br.pucpr.authserver.security.Jwt
-import br.pucpr.authserver.users.Stubs.roleStub
-import br.pucpr.authserver.users.Stubs.userStub
+import br.pucpr.authserver.users.UserStubs.roleStub
+import br.pucpr.authserver.users.UserStubs.userStub
 import br.pucpr.authserver.users.controller.responses.LoginResponse
 import br.pucpr.authserver.users.controller.responses.UserResponse
 import io.kotest.assertions.throwables.shouldThrow

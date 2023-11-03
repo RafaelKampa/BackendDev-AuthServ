@@ -3,8 +3,8 @@ package br.pucpr.authserver.roles.controller
 import br.pucpr.authserver.roles.RoleService
 import br.pucpr.authserver.roles.controller.requests.CreateRoleRequest
 import br.pucpr.authserver.roles.controller.responses.RoleResponse
-import br.pucpr.authserver.users.Stubs
-import br.pucpr.authserver.users.Stubs.roleStub
+import br.pucpr.authserver.users.UserStubs
+import br.pucpr.authserver.users.UserStubs.roleStub
 import io.kotest.matchers.shouldBe
 import io.mockk.checkUnnecessaryStub
 import io.mockk.clearAllMocks
@@ -44,7 +44,7 @@ class RoleControllerTest {
     @Test
     fun `list should return all found roles`() {
         val roles = listOf(
-            roleStub(1, "ADMIN"), Stubs.roleStub(2, "USER")
+            roleStub(1, "ADMIN"), UserStubs.roleStub(2, "USER")
         )
 
         every { serviceMock.findAll() } returns roles

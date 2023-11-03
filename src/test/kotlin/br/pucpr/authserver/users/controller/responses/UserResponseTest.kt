@@ -1,6 +1,6 @@
 package br.pucpr.authserver.users.controller.responses
 
-import br.pucpr.authserver.users.Stubs.userStub
+import br.pucpr.authserver.users.UserStubs.userStub
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 

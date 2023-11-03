@@ -4,9 +4,9 @@ import br.pucpr.authserver.exception.BadRequestException
 import br.pucpr.authserver.exception.ForbiddenException
 import br.pucpr.authserver.exception.NotFoundException
 import br.pucpr.authserver.SortDir
-import br.pucpr.authserver.users.Stubs.adminStub
-import br.pucpr.authserver.users.Stubs.authStub
-import br.pucpr.authserver.users.Stubs.userStub
+import br.pucpr.authserver.users.UserStubs.adminStub
+import br.pucpr.authserver.users.UserStubs.authStub
+import br.pucpr.authserver.users.UserStubs.userStub
 import br.pucpr.authserver.users.UserService
 import br.pucpr.authserver.users.controller.requests.CreateUserRequest
 import br.pucpr.authserver.users.controller.requests.LoginRequest

@@ -1,6 +1,6 @@
 package br.pucpr.authserver.roles.controller.requests
 
-import br.pucpr.authserver.users.Stubs.roleStub
+import br.pucpr.authserver.users.UserStubs.roleStub
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 

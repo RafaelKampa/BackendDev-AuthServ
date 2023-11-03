@@ -46,16 +46,16 @@ data class CreateOrUpdateTaskRequest(
     val conferente: Set<Long>
 ){
     fun toTask() = Task(
-        tipoServico = tipoServico!!,
-        valorUnitario = valorUnitario!!,
-        dimensao = dimensao!!,
-        unidadeMedida = unidadeMedida!!,
-        centroDeCusto = centroDeCusto!!,
-        localExecucao = localExecucao!!,
-        dataInicio = dataInicio!!,
-        previsaoTermino = previsaoTermino!!,
+        tipoServico = tipoServico,
+        valorUnitario = valorUnitario,
+        dimensao = dimensao,
+        unidadeMedida = unidadeMedida,
+        centroDeCusto = centroDeCusto,
+        localExecucao = localExecucao,
+        dataInicio = dataInicio,
+        previsaoTermino = previsaoTermino,
         dataFinal = dataFinal,
-        valorTotal = valorTotal!!,
+        valorTotal = valorTotal,
         obs = obs
     )
 }

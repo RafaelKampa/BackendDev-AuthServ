@@ -1,7 +1,7 @@
 package br.pucpr.authserver.roles
 
 import br.pucpr.authserver.exception.BadRequestException
-import br.pucpr.authserver.users.Stubs.roleStub
+import br.pucpr.authserver.users.UserStubs.roleStub
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.throwable.shouldHaveMessage
 import io.mockk.checkUnnecessaryStub

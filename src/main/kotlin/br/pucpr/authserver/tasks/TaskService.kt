@@ -5,15 +5,14 @@ import br.pucpr.authserver.exception.BadRequestException
 import br.pucpr.authserver.exception.NotFoundException
 import br.pucpr.authserver.users.User
 import br.pucpr.authserver.users.UserRepository
-import br.pucpr.authserver.users.UserService
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Sort
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
 @Service
 class TaskService (
     val repository: TaskRepository,
-    val userService: UserService,
     val userRepository: UserRepository,
 ) {
 
@@ -22,8 +21,8 @@ class TaskService (
     }
 
     fun insert(task: Task): Task {
-        val executor =  task.executor.mapNotNull { it.id?.let { it1 -> userService.findByIdOrNull(it1) } }
-        val conferente =  task.conferente.mapNotNull { it.id?.let { it1 -> userService.findByIdOrNull(it1) } }
+        val executor =  task.executor.mapNotNull { it.id?.let { it1 -> userRepository.findByIdOrNull(it1) } }
+        val conferente =  task.conferente.mapNotNull { it.id?.let { it1 -> userRepository.findByIdOrNull(it1) } }
         var conferenteIsAdm: User = conferente.first()
 
         if (executor.isEmpty()) {
@@ -32,8 +31,12 @@ class TaskService (
         if (conferente.isEmpty()) {
             throw BadRequestException("ID Conferente not found!")
         }
-        if(!conferenteIsAdm.isAdmin) {
-            throw BadRequestException("The 'Conferente' does not have Administrator permission!")
+
+        val nonAdminConferentes = conferente.filter { !it.isAdmin }
+
+        if (nonAdminConferentes.isNotEmpty()) {
+            val usernames = nonAdminConferentes.joinToString { it.name }
+            throw BadRequestException("The following 'Conferente' users do not have Administrator permission: $usernames")
         }
 
         task.executor = executor.toMutableSet()
@@ -49,8 +52,8 @@ class TaskService (
         task = request
         task.id = id
 
-        val executor =  task.executor.mapNotNull { it.id?.let { it1 -> userService.findByIdOrNull(it1) } }
-        val conferente =  task.conferente.mapNotNull { it.id?.let { it1 -> userService.findByIdOrNull(it1) } }
+        val executor =  task.executor.mapNotNull { it.id?.let { it1 -> userRepository.findByIdOrNull(it1) } }
+        val conferente =  task.conferente.mapNotNull { it.id?.let { it1 -> userRepository.findByIdOrNull(it1) } }
         var conferenteIsAdm: User = conferente.first()
 
         if (executor.isEmpty()) {

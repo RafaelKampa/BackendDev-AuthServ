@@ -4,7 +4,7 @@ import br.pucpr.authserver.roles.Role
 import br.pucpr.authserver.security.Jwt.Companion.createAuthentication
 import br.pucpr.authserver.security.UserToken
 
-object Stubs {
+object UserStubs {
     fun userStub(
         id: Long? = 1,
         name: String = "user",
