@@ -2,6 +2,7 @@ package br.pucpr.authserver.tasks
 
 import br.pucpr.authserver.SortDir
 import br.pucpr.authserver.exception.BadRequestException
+import br.pucpr.authserver.exception.ForbiddenException
 import br.pucpr.authserver.exception.NotFoundException
 import br.pucpr.authserver.users.User
 import br.pucpr.authserver.users.UserRepository
@@ -23,20 +24,19 @@ class TaskService (
     fun insert(task: Task): Task {
         val executor =  task.executor.mapNotNull { it.id?.let { it1 -> userRepository.findByIdOrNull(it1) } }
         val conferente =  task.conferente.mapNotNull { it.id?.let { it1 -> userRepository.findByIdOrNull(it1) } }
-        var conferenteIsAdm: User = conferente.first()
 
         if (executor.isEmpty()) {
-            throw BadRequestException("ID Executor not found!")
+            throw NotFoundException("Executor not found!")
         }
         if (conferente.isEmpty()) {
-            throw BadRequestException("ID Conferente not found!")
+            throw NotFoundException("Conferente not found!")
         }
 
         val nonAdminConferentes = conferente.filter { !it.isAdmin }
 
         if (nonAdminConferentes.isNotEmpty()) {
             val usernames = nonAdminConferentes.joinToString { it.name }
-            throw BadRequestException("The following 'Conferente' users do not have Administrator permission: $usernames")
+            throw ForbiddenException("The following 'Conferente' users do not have Administrator permission: $usernames")
         }
 
         task.executor = executor.toMutableSet()

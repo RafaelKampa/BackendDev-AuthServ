@@ -1,8 +1,5 @@
 package br.pucpr.authserver.tasks
 
-import br.pucpr.authserver.roles.Role
-import br.pucpr.authserver.security.Jwt
-import br.pucpr.authserver.security.UserToken
 import br.pucpr.authserver.users.User
 import br.pucpr.authserver.users.UserStubs
 import java.util.*
