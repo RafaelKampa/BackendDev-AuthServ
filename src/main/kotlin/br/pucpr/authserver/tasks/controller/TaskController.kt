@@ -42,6 +42,8 @@ class TaskController(val service: TaskService, val userService: UserService, val
         taskEntity.executor.addAll(executor)
         taskEntity.conferente.addAll(conferente)
 
+        costCenterService.updateValueUndertaken(centroDeCusto.id!!, taskEntity.valorTotal)
+
         return TaskResponse(service.insert(taskEntity))
             .let { ResponseEntity.status(HttpStatus.CREATED).body(it) }
     }
