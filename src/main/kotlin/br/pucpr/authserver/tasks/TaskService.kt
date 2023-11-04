@@ -10,16 +10,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 class TaskService (
     val repository: TaskRepository,
     val userRepository: UserRepository,
 ) {
-
-    companion object {
-        private val log = LoggerFactory.getLogger(TaskService::class.java)
-    }
 
     fun insert(task: Task): Task {
         val executor =  task.executor.mapNotNull { it.id?.let { it1 -> userRepository.findByIdOrNull(it1) } }
@@ -46,9 +43,13 @@ class TaskService (
             .also{ log.info("Task inserted: {}", it.id) }
     }
 
+    fun findByIdOrNull(id: Long) = repository.findById(id).getOrNull()
+
+    private fun findByIdOrThrow(id: Long) =
+        findByIdOrNull(id) ?: throw NotFoundException(id)
+
     fun update(id: Long, request: Task): Task {
-        var task = repository.findById(id).
-            orElseThrow{ NotFoundException("Task not found!") }
+        var task = findByIdOrThrow(id)
         task = request
         task.id = id
 
@@ -91,5 +92,9 @@ class TaskService (
         log.info("This user cannot delete a task!")
         throw BadRequestException("This user cannot delete a task!")
         return false
+    }
+
+    companion object {
+        private val log = LoggerFactory.getLogger(TaskService::class.java)
     }
 }

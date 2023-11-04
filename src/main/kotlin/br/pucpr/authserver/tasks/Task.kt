@@ -1,7 +1,6 @@
 package br.pucpr.authserver.tasks
 
 import br.pucpr.authserver.users.User
-import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 import java.util.*
 
