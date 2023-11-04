@@ -1,7 +1,10 @@
 package br.pucpr.authserver.tasks.controller.requests
 
+import br.pucpr.authserver.costCenters.CostCenter
+import br.pucpr.authserver.costCenters.CostCenterRepository
+import br.pucpr.authserver.costCenters.controller.responses.CostCenterResponse
+import br.pucpr.authserver.exception.NotFoundException
 import br.pucpr.authserver.tasks.Task
-import br.pucpr.authserver.users.User
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.NotNull
@@ -20,8 +23,8 @@ data class CreateOrUpdateTaskRequest(
     @field:NotBlank
     val unidadeMedida: String,
 
-    @field:NotBlank
-    val centroDeCusto: String,
+    @field:NotNull
+    val centroDeCustoId: Long,
 
     @field:NotBlank
     val localExecucao: String,
@@ -43,14 +46,14 @@ data class CreateOrUpdateTaskRequest(
     val executor: Set<Long>,
 
     @field:NotEmpty
-    val conferente: Set<Long>
+    val conferente: Set<Long>,
+
 ){
-    fun toTask() = Task(
+    fun toTask() = Task (
         tipoServico = tipoServico,
         valorUnitario = valorUnitario,
         dimensao = dimensao,
         unidadeMedida = unidadeMedida,
-        centroDeCusto = centroDeCusto,
         localExecucao = localExecucao,
         dataInicio = dataInicio,
         previsaoTermino = previsaoTermino,

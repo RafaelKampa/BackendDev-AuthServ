@@ -1,5 +1,6 @@
 package br.pucpr.authserver.tasks
 
+import br.pucpr.authserver.costCenters.CostCenter
 import br.pucpr.authserver.users.User
 import jakarta.persistence.*
 import java.util.*
@@ -22,8 +23,9 @@ class Task(
     @Column(name = "UNIDADE_MEDIDA", nullable = false)
     var unidadeMedida: String,
 
-    @Column(name = "CENTRO_DE_CUSTO", nullable = false)
-    var centroDeCusto: String,
+    @ManyToOne
+    @JoinColumn(name = "idCostCenter")
+    var centroDeCusto: CostCenter? = null,
 
     @Column(name = "LOCAL_EXECUCAO", nullable = false)
     var localExecucao: String,

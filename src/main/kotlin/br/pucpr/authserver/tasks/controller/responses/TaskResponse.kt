@@ -1,7 +1,7 @@
 package br.pucpr.authserver.tasks.controller.responses
 
+import br.pucpr.authserver.costCenters.controller.responses.CostCenterResponse
 import br.pucpr.authserver.tasks.Task
-import br.pucpr.authserver.users.User
 import br.pucpr.authserver.users.controller.responses.UserResponse
 import java.util.*
 
@@ -11,7 +11,7 @@ data class TaskResponse(
     val valorUnitario: Double,
     val dimensao: Double,
     val unidadeMedida: String,
-    val centroDeCusto: String,
+    val centroDeCusto: CostCenterResponse,
     val localExecucao: String,
     val dataInicio: Date,
     val previsaoTermino: Date,
@@ -27,7 +27,7 @@ data class TaskResponse(
         task.valorUnitario,
         task.dimensao,
         task.unidadeMedida,
-        task.centroDeCusto,
+        task.centroDeCusto?.let { CostCenterResponse(it) }!!,
         task.localExecucao,
         task.dataInicio,
         task.previsaoTermino,

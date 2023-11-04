@@ -23,7 +23,7 @@ class CostCenterService(
 
     fun findByIdOrNull(id: Long) = repository.findById(id).getOrNull()
 
-    private fun findByIdOrThrow(id: Long) =
+    fun findByIdOrThrow(id: Long) =
         findByIdOrNull(id) ?: throw NotFoundException(id)
 
     fun updateName(id: Long, name: String): CostCenter? {

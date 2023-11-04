@@ -1,6 +1,7 @@
 package br.pucpr.authserver.tasks
 
 import br.pucpr.authserver.SortDir
+import br.pucpr.authserver.costCenters.CostCenterRepository
 import br.pucpr.authserver.exception.BadRequestException
 import br.pucpr.authserver.exception.ForbiddenException
 import br.pucpr.authserver.exception.NotFoundException
@@ -16,11 +17,23 @@ import kotlin.jvm.optionals.getOrNull
 class TaskService (
     val repository: TaskRepository,
     val userRepository: UserRepository,
+    val costCenterRepository: CostCenterRepository
 ) {
 
     fun insert(task: Task): Task {
+        val centroDeCustoId = task.centroDeCusto?.id
+
+        val centroDeCusto = centroDeCustoId?.let {
+            costCenterRepository.findById(it)
+                .orElseThrow { NotFoundException("Centro de Custo not found with ID: $centroDeCustoId") }
+        }
+        
         val executor =  task.executor.mapNotNull { it.id?.let { it1 -> userRepository.findByIdOrNull(it1) } }
         val conferente =  task.conferente.mapNotNull { it.id?.let { it1 -> userRepository.findByIdOrNull(it1) } }
+
+        if (centroDeCusto == null) {
+            throw NotFoundException("Centro de Custo not found!")
+        }
 
         if (executor.isEmpty()) {
             throw NotFoundException("Executor not found!")
@@ -36,6 +49,7 @@ class TaskService (
             throw ForbiddenException("The following 'Conferente' users do not have Administrator permission: $usernames")
         }
 
+        task.centroDeCusto = centroDeCusto
         task.executor = executor.toMutableSet()
         task.conferente = conferente.toMutableSet()
 
