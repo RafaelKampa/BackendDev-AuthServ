@@ -1,22 +1,17 @@
 package br.pucpr.authserver.tasks.controller
 
 import br.pucpr.authserver.SortDir
-import br.pucpr.authserver.costCenters.CostCenterRepository
 import br.pucpr.authserver.costCenters.CostCenterService
-import br.pucpr.authserver.exception.ForbiddenException
 import br.pucpr.authserver.exception.NotFoundException
-import br.pucpr.authserver.security.UserToken
 import br.pucpr.authserver.tasks.TaskService
 import br.pucpr.authserver.tasks.controller.requests.CreateOrUpdateTaskRequest
 import br.pucpr.authserver.tasks.controller.responses.TaskResponse
 import br.pucpr.authserver.users.UserService
-import br.pucpr.authserver.users.controller.UserController
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -42,7 +37,8 @@ class TaskController(val service: TaskService, val userService: UserService, val
         taskEntity.executor.addAll(executor)
         taskEntity.conferente.addAll(conferente)
 
-        costCenterService.updateValueUndertaken(centroDeCusto.id!!, taskEntity.valorTotal)
+        //Adiciona o valor do serviço ao valor empreendido no centro de custo
+        costCenterService.increaseValueUndertaken(centroDeCusto.id!!, taskEntity.valorTotal)
 
         return TaskResponse(service.insert(taskEntity))
             .let { ResponseEntity.status(HttpStatus.CREATED).body(it) }
@@ -57,12 +53,24 @@ class TaskController(val service: TaskService, val userService: UserService, val
         @RequestBody request: CreateOrUpdateTaskRequest,
         @PathVariable id: Long,
     ): ResponseEntity <TaskResponse> {
+        val centroDeCusto = request.centroDeCustoId?.let {
+            costCenterService.findByIdOrNull(it)
+        } ?: throw NotFoundException("CostCenter not found!")
+
         val executor =  request.executor.mapNotNull { userService.findByIdOrNull(it) }
         val conferente =  request.conferente.mapNotNull { userService.findByIdOrNull(it) }
         val taskEntity = request.toTask()
 
+        taskEntity.centroDeCusto = centroDeCusto
         taskEntity.executor.addAll(executor)
         taskEntity.conferente.addAll(conferente)
+        val taskAntiga = service.findByIdOrNull(id)
+
+        //Remove o valor anterior do serviço aplicado ao centro de custo e depois adiciona o valor novo
+        if (taskAntiga != null) {
+            costCenterService.decreaseValueUndertaken(id!!, taskAntiga.valorTotal)
+            costCenterService.increaseValueUndertaken(id!!, taskEntity.valorTotal)
+        }
 
         return service.update(id, taskEntity)
             .let{ ResponseEntity.ok(TaskResponse(it)) }

@@ -44,11 +44,20 @@ class CostCenterService(
         return repository.save(costCenter)
     }
 
-    fun updateValueUndertaken(id: Long, value: Double): CostCenter? {
+    fun increaseValueUndertaken(id: Long, value: Double): CostCenter? {
         val costCenter = findByIdOrThrow(id)
 
         if (value <= 0) return null
         costCenter.valorEmpreendido = costCenter.valorEmpreendido + value
+
+        return repository.save(costCenter)
+    }
+
+    fun decreaseValueUndertaken(id: Long, value: Double): CostCenter? {
+        val costCenter = findByIdOrThrow(id)
+
+        if (value <= 0) return null
+        costCenter.valorEmpreendido = costCenter.valorEmpreendido - value
 
         return repository.save(costCenter)
     }

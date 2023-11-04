@@ -67,9 +67,19 @@ class TaskService (
         task = request
         task.id = id
 
+        val centroDeCustoId = task.centroDeCusto?.id
+
+        val centroDeCusto = centroDeCustoId?.let {
+            costCenterRepository.findById(it)
+                .orElseThrow { NotFoundException("Centro de Custo not found with ID: $centroDeCustoId") }
+        }
+
         val executor =  task.executor.mapNotNull { it.id?.let { it1 -> userRepository.findByIdOrNull(it1) } }
         val conferente =  task.conferente.mapNotNull { it.id?.let { it1 -> userRepository.findByIdOrNull(it1) } }
-        var conferenteIsAdm: User = conferente.first()
+
+        if (centroDeCusto == null) {
+            throw NotFoundException("Centro de Custo not found!")
+        }
 
         if (executor.isEmpty()) {
             throw BadRequestException("ID Executor not found!")
@@ -77,10 +87,15 @@ class TaskService (
         if (conferente.isEmpty()) {
             throw BadRequestException("ID Conferente not found!")
         }
-        if(!conferenteIsAdm.isAdmin) {
-            throw BadRequestException("The 'Conferente' does not have Administrator permission!")
+
+        val nonAdminConferentes = conferente.filter { !it.isAdmin }
+
+        if (nonAdminConferentes.isNotEmpty()) {
+            val usernames = nonAdminConferentes.joinToString { it.name }
+            throw ForbiddenException("The following 'Conferente' users do not have Administrator permission: $usernames")
         }
 
+        task.centroDeCusto = centroDeCusto
         task.executor = executor.toMutableSet()
         task.conferente = conferente.toMutableSet()
 

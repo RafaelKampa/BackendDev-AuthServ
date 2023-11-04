@@ -59,7 +59,7 @@ class CostCenterController(val service: CostCenterService) {
         @RequestBody request: PatchCostCenterValueRequest,
         @PathVariable id: Long,
     ): ResponseEntity <CostCenterResponse> {
-        return service.updateValueUndertaken(id, request.valorEmpreendido)
+        return service.increaseValueUndertaken(id, request.valorEmpreendido)
             ?.let{ ResponseEntity.ok(CostCenterResponse(it)) }
             ?: ResponseEntity.noContent().build()
     }

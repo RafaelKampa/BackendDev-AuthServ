@@ -19,7 +19,7 @@ import java.util.*
 internal class TaskServiceTest {
     private val repositoryMock = mockk<TaskRepository>()
     private val userRepositoryMock = mockk<UserRepository>()
-    private val service = TaskService(repositoryMock, userRepositoryMock)
+    private val service = TaskService(repositoryMock, userRepositoryMock, costCenterRepository)
 
     @BeforeEach
     fun setup() {

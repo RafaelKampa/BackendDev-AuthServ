@@ -37,9 +37,6 @@ data class CreateOrUpdateTaskRequest(
 
     val dataFinal: Date?,
 
-    @field:NotNull
-    val valorTotal: Double,
-
     val obs: String?,
 
     @field:NotEmpty
@@ -58,7 +55,7 @@ data class CreateOrUpdateTaskRequest(
         dataInicio = dataInicio,
         previsaoTermino = previsaoTermino,
         dataFinal = dataFinal,
-        valorTotal = valorTotal,
+        valorTotal = valorUnitario * dimensao,
         obs = obs
     )
 }
