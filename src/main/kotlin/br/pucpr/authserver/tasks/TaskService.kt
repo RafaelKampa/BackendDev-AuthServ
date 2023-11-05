@@ -105,13 +105,12 @@ class TaskService (
     }
 
     fun delete(idTask: Long): Boolean {
-        val task = repository.findById(idTask).
-            orElseThrow { NotFoundException("Task not found!") }
+        val task = repository.findByIdOrNull(idTask) ?: return false
         //Não consegui fazer isso funcionar!!!
         //Remove o valor total do serviço no centro de custo antes de deletar a task
 //        costCenterRepository.decreaseValueUndertaken(task.centroDeCusto!!.id!!, task.valorTotal)
-        repository.delete(task)
 
+        repository.delete(task)
         log.info("Task deleted: {}", task.id)
         return true
     }

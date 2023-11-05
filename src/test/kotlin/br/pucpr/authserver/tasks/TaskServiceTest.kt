@@ -248,4 +248,18 @@ internal class TaskServiceTest {
         every { repositoryMock.findAll(Sort.by("dataInicio").descending()) } returns taskList
         service.findAll(sortDir) shouldBe taskList
     }
+
+    @Test
+    fun `delete must return false if the task does not exists`() {
+        every { repositoryMock.findById(1) } returns Optional.empty()
+        service.delete(1) shouldBe false
+    }
+
+    @Test
+    fun `delete must call delete and return true if the task exists`() {
+        val task = TaskStubs.taskStub()
+        every { repositoryMock.findById(1) } returns Optional.of(task)
+        justRun { repositoryMock.delete(task) }
+        service.delete(1) shouldBe true
+    }
 }
