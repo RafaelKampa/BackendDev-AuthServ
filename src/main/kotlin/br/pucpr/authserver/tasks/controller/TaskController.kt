@@ -27,7 +27,7 @@ class TaskController(val service: TaskService, val userService: UserService, val
 
         val centroDeCusto = task.centroDeCustoId?.let {
             costCenterService.findByIdOrNull(it)
-        } ?: throw NotFoundException("CostCenter not found!")
+        } ?: throw NotFoundException("Cost Center not found!")
 
         val executor =  task.executor.mapNotNull { userService.findByIdOrNull(it) }
         val conferente =  task.conferente.mapNotNull { userService.findByIdOrNull(it) }
@@ -55,7 +55,7 @@ class TaskController(val service: TaskService, val userService: UserService, val
     ): ResponseEntity <TaskResponse> {
         val centroDeCusto = request.centroDeCustoId?.let {
             costCenterService.findByIdOrNull(it)
-        } ?: throw NotFoundException("CostCenter not found!")
+        } ?: throw NotFoundException("Cost Center not found!")
 
         val executor =  request.executor.mapNotNull { userService.findByIdOrNull(it) }
         val conferente =  request.conferente.mapNotNull { userService.findByIdOrNull(it) }
