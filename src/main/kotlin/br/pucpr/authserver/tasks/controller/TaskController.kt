@@ -73,7 +73,8 @@ class TaskController(val service: TaskService, val userService: UserService, val
         }
 
         return service.update(id, taskEntity)
-            .let{ ResponseEntity.ok(TaskResponse(it)) }
+            ?.let{ ResponseEntity.ok(TaskResponse(it)) }
+            ?: ResponseEntity.noContent().build()
     }
 
     @SecurityRequirement(name="AuthServer")
@@ -85,8 +86,10 @@ class TaskController(val service: TaskService, val userService: UserService, val
 
     @SecurityRequirement(name="AuthServer")
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/deleteTask/{idUser}/{idTask}")
-    fun delete(@PathVariable idUser: Long, @PathVariable idTask: Long): ResponseEntity<Void> =
-        if (service.delete(idUser, idTask)) ResponseEntity.ok().build()
+    @DeleteMapping("/deleteTask/{idTask}")
+    fun delete(@PathVariable idTask: Long): ResponseEntity<Void> =
+        if (service.delete(idTask)){
+            ResponseEntity.ok().build()
+        }
         else ResponseEntity.notFound().build()
 }

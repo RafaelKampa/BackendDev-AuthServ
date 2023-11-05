@@ -25,14 +25,14 @@ class TaskService (
 
         val centroDeCusto = centroDeCustoId?.let {
             costCenterRepository.findById(it)
-                .orElseThrow { NotFoundException("Centro de Custo not found with ID: $centroDeCustoId") }
+                .orElseThrow { NotFoundException("Cost center not found with ID: $centroDeCustoId") }
         }
         
         val executor =  task.executor.mapNotNull { it.id?.let { it1 -> userRepository.findByIdOrNull(it1) } }
         val conferente =  task.conferente.mapNotNull { it.id?.let { it1 -> userRepository.findByIdOrNull(it1) } }
 
         if (centroDeCusto == null) {
-            throw NotFoundException("Centro de Custo not found!")
+            throw NotFoundException("Cost center not found!")
         }
 
         if (executor.isEmpty()) {
@@ -59,33 +59,26 @@ class TaskService (
 
     fun findByIdOrNull(id: Long) = repository.findById(id).getOrNull()
 
-    private fun findByIdOrThrow(id: Long) =
-        findByIdOrNull(id) ?: throw NotFoundException(id)
-
-    fun update(id: Long, request: Task): Task {
-        var task = findByIdOrThrow(id)
-        task = request
-        task.id = id
-
-        val centroDeCustoId = task.centroDeCusto?.id
+    fun update(id: Long, request: Task): Task? {
+        val centroDeCustoId = request.centroDeCusto?.id
 
         val centroDeCusto = centroDeCustoId?.let {
             costCenterRepository.findById(it)
                 .orElseThrow { NotFoundException("Centro de Custo not found with ID: $centroDeCustoId") }
         }
 
-        val executor =  task.executor.mapNotNull { it.id?.let { it1 -> userRepository.findByIdOrNull(it1) } }
-        val conferente =  task.conferente.mapNotNull { it.id?.let { it1 -> userRepository.findByIdOrNull(it1) } }
+        val executor =  request.executor.mapNotNull { it.id?.let { it1 -> userRepository.findByIdOrNull(it1) } }
+        val conferente =  request.conferente.mapNotNull { it.id?.let { it1 -> userRepository.findByIdOrNull(it1) } }
 
         if (centroDeCusto == null) {
-            throw NotFoundException("Centro de Custo not found!")
+            throw NotFoundException("Cost center not found!")
         }
 
         if (executor.isEmpty()) {
-            throw BadRequestException("ID Executor not found!")
+            throw NotFoundException("Executor not found!")
         }
         if (conferente.isEmpty()) {
-            throw BadRequestException("ID Conferente not found!")
+            throw NotFoundException("Conferente not found!")
         }
 
         val nonAdminConferentes = conferente.filter { !it.isAdmin }
@@ -95,11 +88,14 @@ class TaskService (
             throw ForbiddenException("The following 'Conferente' users do not have Administrator permission: $usernames")
         }
 
-        task.centroDeCusto = centroDeCusto
-        task.executor = executor.toMutableSet()
-        task.conferente = conferente.toMutableSet()
+        var taskAntiga = findByIdOrNull(id)
+        if (taskAntiga == request) return null
 
-        return repository.save(task)
+        request.centroDeCusto = centroDeCusto
+        request.executor = executor.toMutableSet()
+        request.conferente = conferente.toMutableSet()
+
+        return repository.save(request)
             .also{ log.info("Task updated: {}", it.id) }
     }
 
@@ -108,19 +104,16 @@ class TaskService (
         SortDir.DESC -> repository.findAll(Sort.by("dataInicio").descending())
     }
 
-    fun delete(idUser: Long, idTask: Long): Boolean {
-        val user = userRepository.findById(idUser).
-                orElseThrow { NotFoundException("User not found!") }
+    fun delete(idTask: Long): Boolean {
         val task = repository.findById(idTask).
             orElseThrow { NotFoundException("Task not found!") }
-        if (user.roles.any { it.name == "ADMIN" }) {
-            repository.delete(task)
-            log.info("Task deleted: {}", task.id)
-            return true
-        }
-        log.info("This user cannot delete a task!")
-        throw BadRequestException("This user cannot delete a task!")
-        return false
+        //Não consegui fazer isso funcionar!!!
+        //Remove o valor total do serviço no centro de custo antes de deletar a task
+//        costCenterRepository.decreaseValueUndertaken(task.centroDeCusto!!.id!!, task.valorTotal)
+        repository.delete(task)
+
+        log.info("Task deleted: {}", task.id)
+        return true
     }
 
     companion object {
