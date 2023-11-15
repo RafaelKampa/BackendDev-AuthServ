@@ -115,6 +115,14 @@ class TaskService (
         return true
     }
 
+    fun findByUserName(userName: String): List<Task> {
+        val retorno = repository.findByUserName(userName)
+        if (retorno.isEmpty()) {
+            throw NotFoundException("No tasks found with the given username!")
+        }
+        return retorno
+    }
+
     companion object {
         private val log = LoggerFactory.getLogger(TaskService::class.java)
     }

@@ -92,4 +92,15 @@ class TaskController(val service: TaskService, val userService: UserService, val
             ResponseEntity.ok().build()
         }
         else ResponseEntity.notFound().build()
+
+    @SecurityRequirement(name = "AuthServer")
+    @PreAuthorize("permitAll()")
+    @GetMapping("/findByUserName/{userName}")
+    fun findByUsername(@PathVariable userName: String): ResponseEntity<List<TaskResponse>> {
+        return service.findByUserName(userName)
+            .map { TaskResponse(it) }
+            ?.let { ResponseEntity.ok(it) }
+            ?: ResponseEntity.notFound().build()
+    }
+
 }
