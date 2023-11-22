@@ -1,7 +1,7 @@
-"# BackendDev-AuthServ" 
-Alunos:
-    Bernardo Zeni Diniz
-    Rafael Gilberto Kampa
+"# BackendDev-AuthServ" <br />
+<p>Alunos:
+    Bernardo Zeni Diniz<br />
+    Rafael Gilberto Kampa</p>
 
-Link de apresentação do projeto:
-    https://www.youtube.com/watch?v=kKNA3UsXgfQ
+<p>Link de apresentação do projeto:<br />
+    https://www.youtube.com/watch?v=kKNA3UsXgfQ</p>
