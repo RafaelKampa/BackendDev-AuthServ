@@ -115,12 +115,9 @@ class TaskService (
         return true
     }
 
-    fun findByUserName(userName: String): List<Task> {
-        val retorno = repository.findByUserName(userName)
-        if (retorno.isEmpty()) {
-            throw NotFoundException("No tasks found with the given username!")
-        }
-        return retorno
+    fun findByUserName(userName: String, sortDir: String?): List<Task> {
+        val sort = if (sortDir == "DESC") Sort.by(Sort.Order.desc("id")) else Sort.by(Sort.Order.asc("id"))
+        return repository.findByUserName(userName, sort)
     }
 
     companion object {

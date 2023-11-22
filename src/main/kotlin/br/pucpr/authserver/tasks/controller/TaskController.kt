@@ -96,11 +96,16 @@ class TaskController(val service: TaskService, val userService: UserService, val
     @SecurityRequirement(name = "AuthServer")
     @PreAuthorize("permitAll()")
     @GetMapping("/findByUserName/{userName}")
-    fun findByUsername(@PathVariable userName: String): ResponseEntity<List<TaskResponse>> {
-        return service.findByUserName(userName)
+    fun findByUsername(
+        @PathVariable userName: String,
+        @RequestParam(defaultValue = "ASC") sortDir: SortDir
+    ): ResponseEntity<List<TaskResponse>> {
+        val sortDirString = sortDir.name // Convertendo SortDir para String
+        return service.findByUserName(userName, sortDirString)
             .map { TaskResponse(it) }
             ?.let { ResponseEntity.ok(it) }
             ?: ResponseEntity.notFound().build()
     }
+
 
 }
